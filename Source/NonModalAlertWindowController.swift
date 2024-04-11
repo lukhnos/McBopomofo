@@ -45,22 +45,9 @@ class NonModalAlertWindowController: NSWindowController {
 
         self.delegate = delegate
 
-        var oldFrame = confirmButton.frame
         confirmButton.title = confirmButtonTitle
-        confirmButton.sizeToFit()
-
-        var newFrame = confirmButton.frame
-        newFrame.size.width = max(90, newFrame.size.width + 10)
-        newFrame.origin.x += oldFrame.size.width - newFrame.size.width
-        confirmButton.frame = newFrame
-
         if let cancelButtonTitle = cancelButtonTitle {
             cancelButton.title = cancelButtonTitle
-            cancelButton.sizeToFit()
-            var adjustFrame = cancelButton.frame
-            adjustFrame.size.width = max(90, adjustFrame.size.width + 10)
-            adjustFrame.origin.x = newFrame.origin.x - adjustFrame.size.width
-            confirmButton.frame = adjustFrame
             cancelButton.isHidden = false
         } else {
             cancelButton.isHidden = true
@@ -82,21 +69,23 @@ class NonModalAlertWindowController: NSWindowController {
 
         titleTextField.stringValue = title
 
-        oldFrame = contentTextField.frame
+        let oldContentFrame = contentTextField.frame
         contentTextField.stringValue = content
 
-        var infiniteHeightFrame = oldFrame
+        var infiniteHeightFrame = oldContentFrame
         infiniteHeightFrame.size.width -= 4.0
         infiniteHeightFrame.size.height = 10240
-        newFrame = (content as NSString).boundingRect(with: infiniteHeightFrame.size, options: [.usesLineFragmentOrigin], attributes: [.font: contentTextField.font!])
-        newFrame.size.width = max(newFrame.size.width, oldFrame.size.width)
-        newFrame.size.height += 4.0
-        newFrame.origin = oldFrame.origin
-        newFrame.origin.y -= (newFrame.size.height - oldFrame.size.height)
-        contentTextField.frame = newFrame
+        var newContentFrame = (content as NSString).boundingRect(
+            with: infiniteHeightFrame.size, options: [.usesLineFragmentOrigin],
+            attributes: [.font: contentTextField.font!])
+        newContentFrame.size.width = max(newContentFrame.size.width, oldContentFrame.size.width)
+        newContentFrame.size.height += 4.0
+        newContentFrame.origin = oldContentFrame.origin
+        newContentFrame.origin.y -= (newContentFrame.size.height - oldContentFrame.size.height)
+        contentTextField.frame = newContentFrame
 
         var windowFrame = window?.frame ?? NSRect.zero
-        windowFrame.size.height += (newFrame.size.height - oldFrame.size.height)
+        windowFrame.size.height += (newContentFrame.size.height - oldContentFrame.size.height)
         window?.level = NSWindow.Level(Int(CGShieldingWindowLevel()) + 1)
         window?.setFrame(windowFrame, display: true)
         window?.center()
